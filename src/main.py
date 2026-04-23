@@ -20,7 +20,6 @@ def main() -> None:
     camera.start()
 
     while True:
-      pass
       perc = camera.read()
       rules, state = state_machine.update(perc)
       # command = translator.compute(perc, rules)

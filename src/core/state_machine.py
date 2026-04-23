@@ -14,7 +14,6 @@ class StateMachine(Component):
           self.state = i.to_state
           break
     
-    print(self.state)
     return self.rules[self.state], self.state
   
   def cleanup(self) -> None:
