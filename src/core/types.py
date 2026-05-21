@@ -46,5 +46,5 @@ class Transition:
 
 @dataclass
 class MotorCommand:
-  turning_val: int  # -1 -> 1
-  speed_val: int    # -1 -> 1
+  turning_val: float  # -1 -> 1
+  speed_val: float    # -1 -> 1

@@ -39,35 +39,48 @@ class MotorController(Component):
 
   
 
+  def thunk(self, cmd: MotorCOmmand):
+    speed = cmd.speed_val #[-1, 1]
+    turning = cmd.turning_val/180 #[-180, 180]/180
 
-  # def thunk(self, cmd: MotorCommand):
-  #   turning = cmd.turning_val/180 #how should I scale it to make sense 
-  #   offset = cmd.offset
-
-  #   forward = True
-  #   speed = cmd.speed_val 
-
-  #   if (speed < 0):
-  #     speed = -speed
-  #     forward = False
+    rightTurn = speed - turning
+    leftTurn = speed + turning
 
 
-  #   rightTurn = speed - turning 
-  #   leftTurn = speed + turning
-
-  #   #scale to largest out of rightturn, leftturn or 1
-  #   scale = max(rightTurn, leftTurn, 1)
-
-  #   return [(rightTurn/scale)*100, (leftTurn/scale)*100] #help idk
+    scale = max(abs(leftTurn), abs(rightTurn), 1)
     
+    rightTurn = (rightTurn/scale)
     
+    leftTurn = (leftTurn/scale)
+
+    rightEnum = StupidEnum.RIGHT_FW
+    leftEnum = StupidEnum.LEFT_FW
+
+    if rightTurn < 0: 
+      rightEnum = StupidEnum.RIGHT_BW
+
+    if leftTurn < 0:
+      leftEnum = StupidEnum.LEFT_BW
+
+
+    rightPWM = abs(rightTurn)*100
+    leftPWM = abs(leftTurn)*100
+
+    directions = (
+        leftEnum.value[0],
+        leftEnum.value[1],
+        rightEnum.value[2],
+        rightEnum.value[3],
+    )
+
+    return directions, rightPWM, leftPWM
+
   
   def execute(self, cmd: MotorCommand) -> None:
     #here i am taking the info from motorcommand and putting stuff into the pins
-    #turning_val and speed_val
-    #help
-    directions = self.thunk(cmd)
-
+    
+    
+    # self.thunk(cmd) 
 
 
     pass
