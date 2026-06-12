@@ -25,6 +25,7 @@ class State(Enum):
 @dataclass
 class CameraData:
   frame: np.ndarray
+  raw: np.ndarray
   stop: bool
   confidence: float
   turning: float
