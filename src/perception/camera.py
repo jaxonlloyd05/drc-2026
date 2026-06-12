@@ -50,7 +50,7 @@ class Camera(Component):
       stop=False, 
       confidence=1.0, 
       turning=0.0
-      )
+    )
 
   def filter(self):
     avgd = np.mean(np.array(self.prevframes, dtype=np.float32), axis=0).astype(np.uint8)
