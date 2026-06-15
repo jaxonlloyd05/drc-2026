@@ -23,6 +23,22 @@ class State(Enum):
 
 # dataclasses
 @dataclass
+class ScanlineDebug:
+  row: int
+  yellow_x: float | None
+  blue_x: float | None
+  lane_center_x: float | None
+  confidence: float
+
+@dataclass
+class VisionDebug:
+  scanlines: list[ScanlineDebug]
+  stop: bool
+  arrow: int | None
+  raw_turning: float
+  raw_confidence: float
+
+@dataclass
 class CameraData:
   frame: np.ndarray
   raw: np.ndarray
@@ -31,6 +47,7 @@ class CameraData:
   turning: float
   arrow: int | None = None  # -1 or 1 (flip turning direction)
   controller: bool = False
+  debug: VisionDebug | None = None
 
 @dataclass
 class StateRules:
