@@ -21,10 +21,10 @@ LEFT_p_DIFF = 0
 
 # mc left
 PIN_ENA = 12
-PIN_IN1 = 22 #forward
-PIN_IN2 = 24 #backward
+PIN_IN1 = 19
+PIN_IN2 = 26
 
 # mc right
 PIN_ENB = 13
-PIN_IN3 = 21 #forward
-PIN_IN4 = 23 #backward
+PIN_IN3 = 16
+PIN_IN4 = 20
