@@ -2,6 +2,7 @@ from core.types import Component, MotorCommand
 from enum import Enum
 
 import RPi.GPIO as GPIO 
+import config
 
 class StupidEnum (Enum):
   LEFT_FW = (True, False, None, None)
@@ -13,14 +14,14 @@ class MotorController(Component):
   def __init__(self):
     GPIO.setmode(GPIO.BOARD) #gonna make us use board mode for now, lmk if no
     #left
-    self.ENA = 32 
-    self.IN1 = 22 #forward
-    self.IN2 = 24 #backward
+    self.ENA = config.PIN_ENA
+    self.IN1 = config.PIN_IN1 #forward
+    self.IN2 = config.PIN_IN2 #backward
     
     #right
-    self.ENB = 33
-    self.IN3 = 21 #forward
-    self.IN4 = 23 #backward
+    self.ENB = config.PIN_ENB
+    self.IN3 = config.PIN_IN3 #forward
+    self.IN4 = config.PIN_IN4 #backward
 
     for pin in self.ENA, self.IN1, self.IN2, self.ENB, self.IN3, self.IN4:
       GPIO.setup(pin, GPIO.OUT)
@@ -39,7 +40,7 @@ class MotorController(Component):
 
   
 
-  def thunk(self, cmd: MotorCOmmand):
+  def thunk(self, cmd: MotorCommand):
     speed = cmd.speed_val #[-1, 1]
     turning = cmd.turning_val/180 #[-180, 180]/180
 
