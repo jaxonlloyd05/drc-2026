@@ -16,12 +16,15 @@ MAX_LANE_WIDTH_RATIO = 0.92
 
 VISION_SMOOTHING_FRAMES = 4
 
+RIGHT_P_DIFF = 0
+LEFT_p_DIFF = 0
+
 # mc left
-PIN_ENA = 32
+PIN_ENA = 12
 PIN_IN1 = 22 #forward
 PIN_IN2 = 24 #backward
 
 # mc right
-PIN_ENB = 33
+PIN_ENB = 13
 PIN_IN3 = 21 #forward
 PIN_IN4 = 23 #backward

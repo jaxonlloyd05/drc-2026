@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from core.state_machine import StateMachine
 from perception.camera import Camera
 from perception.output import CameraDisplay
