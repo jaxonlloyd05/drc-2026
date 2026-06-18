@@ -1,7 +1,7 @@
 from core.types import Component, MotorCommand
 from enum import Enum
 
-import Jetson.GPIO as GPIO
+import RPi.GPIO as GPIO 
 
 class StupidEnum (Enum):
   LEFT_FW = (True, False, None, None)
