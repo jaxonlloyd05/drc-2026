@@ -1,8 +1,7 @@
 CAMERA_INDEX = 0
 FRAME_AVERAGE_COUNT = 2
 
-# Preserve the current camera transform by default: use the left half of the
-# image and flip it both horizontally and vertically.
+# depth camera requires cropping of output
 CAMERA_CROP_MODE = "left_half"
 CAMERA_FLIP_CODE = -1
 
@@ -16,3 +15,13 @@ MIN_LANE_WIDTH_RATIO = 0.18
 MAX_LANE_WIDTH_RATIO = 0.92
 
 VISION_SMOOTHING_FRAMES = 4
+
+# mc left
+PIN_ENA = 32
+PIN_IN1 = 22 #forward
+PIN_IN2 = 24 #backward
+
+# mc right
+PIN_ENB = 33
+PIN_IN3 = 21 #forward
+PIN_IN4 = 23 #backward
