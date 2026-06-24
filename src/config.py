@@ -20,11 +20,11 @@ RIGHT_P_DIFF = 0
 LEFT_p_DIFF = 0
 
 # mc left
-PIN_ENA = 12
-PIN_IN1 = 19
-PIN_IN2 = 26
+PIN_ENA = 32
+PIN_IN1 = 35
+PIN_IN2 = 37
 
 # mc right
-PIN_ENB = 13
-PIN_IN3 = 16
-PIN_IN4 = 20
+PIN_ENB = 33
+PIN_IN3 = 36
+PIN_IN4 = 38
