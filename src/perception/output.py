@@ -9,7 +9,7 @@ class CameraDisplay(Component):
     if data.debug is not None:
       self._draw_debug(data)
 
-    cv2.imshow(str(state.value), data.frame)
+    cv2.imshow('horse', data.frame)
     cv2.waitKey(1)
 
   def _draw_debug(self, data: CameraData) -> None:

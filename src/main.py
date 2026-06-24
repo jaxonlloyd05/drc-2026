@@ -3,20 +3,18 @@
 from core.state_machine import StateMachine
 from perception.camera import Camera
 from perception.output import CameraDisplay
-from motor.controller import MotorController
 from motor.translator import MotorTranslator
 # import sys
 
 def main() -> None:
   components = [
     Camera(),
-    MotorController(),
     StateMachine(),
     MotorTranslator(),
     CameraDisplay()
   ]
 
-  camera, controller, state_machine, translator, display = components
+  camera, state_machine, translator, display = components
 
   try:
     camera.start()
