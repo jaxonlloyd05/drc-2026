@@ -4,13 +4,14 @@ from core.state_machine import StateMachine
 from perception.camera import Camera
 from perception.output import CameraDisplay
 from motor.translator import MotorTranslator
-# import sys
+# from motor.controller import MotorController
 
 def main() -> None:
   components = [
     Camera(),
     StateMachine(),
     MotorTranslator(),
+    # MotorController(),
     CameraDisplay()
   ]
 
@@ -22,7 +23,8 @@ def main() -> None:
     while True:
       perception = camera.read()
       rules, state = state_machine.update(perception)
-      # command = translator.compute(perception, rules)
+      command = translator.compute(perception, rules)
+      print(command)
       # controller.execute(command)
       display.show(perception, state)
 
