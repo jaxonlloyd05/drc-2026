@@ -4,18 +4,18 @@ from core.state_machine import StateMachine
 from perception.camera import Camera
 from perception.output import CameraDisplay
 from motor.translator import MotorTranslator
-# from motor.controller import MotorController
+from motor.controller import MotorController
 
 def main() -> None:
   components = [
     Camera(),
     StateMachine(),
     MotorTranslator(),
-    # MotorController(),
+    MotorController(),
     CameraDisplay()
   ]
 
-  camera, state_machine, translator, display = components
+  camera, state_machine, translator, controller, display = components
 
   try:
     camera.start()
@@ -24,8 +24,8 @@ def main() -> None:
       perception = camera.read()
       rules, state = state_machine.update(perception)
       command = translator.compute(perception, rules)
-      print(command)
-      # controller.execute(command)
+      # print(command)
+      controller.execute(command)
       display.show(perception, state)
 
   except KeyboardInterrupt:
