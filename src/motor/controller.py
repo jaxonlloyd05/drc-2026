@@ -44,8 +44,12 @@ class MotorController(Component):
     speed = _clamp(cmd.speed_val, 0.0, 1.0)
     turning = _clamp(cmd.turning_val, -1.0, 1.0)
 
-    left = LEFT_MAX_DUTY * speed
-    right = RIGHT_MAX_DUTY * speed
+    # left = LEFT_MAX_DUTY * speed
+    # right = RIGHT_MAX_DUTY * speed
+
+    # motors are failing to scale from 0-100, set at perm low
+    left = LEFT_MAX_DUTY
+    right = RIGHT_MAX_DUTY
 
     if turning > 0:
       right *= 1 - (2 * turning)
