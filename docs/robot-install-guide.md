@@ -93,6 +93,21 @@ This will:
 
 ---
 
+## Raspberry Pi pigpio Setup
+
+The motor controller uses `pigpio` for PWM and GPIO writes. On the Raspberry Pi, install and start the daemon before running the robot service:
+
+```bash
+sudo apt update
+sudo apt install -y pigpio python3-pigpio
+sudo systemctl enable --now pigpiod
+sudo systemctl status pigpiod
+```
+
+The Python `pigpio` package is also listed in `requirements.txt` for deployments, but the background `pigpiod` service must be running or the motor controller will fail to start.
+
+---
+
 ## Step 4 — systemd Service (Auto-Run on Boot)
 
 Create the service file on the robot. This makes the code start automatically every time the microcontroller powers on.
@@ -122,7 +137,8 @@ WantedBy=multi-user.target
 ```ini
 [Unit]
 Description=DRC Autorun Service
-After=local-fs.target
+After=local-fs.target pigpiod.service
+Requires=pigpiod.service
 StartLimitIntervalSec=0
 
 [Service]

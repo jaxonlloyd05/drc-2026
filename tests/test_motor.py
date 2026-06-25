@@ -16,68 +16,62 @@ except ModuleNotFoundError:
   sys.modules["numpy"] = fake_numpy
 
 
-class FakePWM:
+class FakePi:
   instances = []
 
-  def __init__(self, pin, frequency):
-    self.pin = pin
-    self.frequency = frequency
-    self.duty_cycles = []
-    self.started = False
+  def __init__(self):
+    self.connected = True
+    self.modes = []
+    self.outputs = []
+    self.pwm_frequencies = []
+    self.pwm_ranges = []
+    self.pwm_dutycycles = []
     self.stopped = False
-    FakePWM.instances.append(self)
+    FakePi.instances.append(self)
 
-  def start(self, duty):
-    self.started = True
-    self.duty_cycles.append(duty)
+  def set_mode(self, pin, mode):
+    self.modes.append((pin, mode))
 
-  def ChangeDutyCycle(self, duty):
-    self.duty_cycles.append(duty)
+  def write(self, pin, value):
+    self.outputs.append((pin, value))
+
+  def set_PWM_frequency(self, pin, frequency):
+    self.pwm_frequencies.append((pin, frequency))
+
+  def set_PWM_range(self, pin, pwm_range):
+    self.pwm_ranges.append((pin, pwm_range))
+
+  def set_PWM_dutycycle(self, pin, dutycycle):
+    self.pwm_dutycycles.append((pin, dutycycle))
 
   def stop(self):
     self.stopped = True
 
 
-class FakeGPIO(types.ModuleType):
-  BOARD = "BOARD"
-  OUT = "OUT"
-  HIGH = 1
-  LOW = 0
+class FakePigpio(types.ModuleType):
+  OUTPUT = "OUTPUT"
 
   def __init__(self):
-    super().__init__("RPi.GPIO")
-    self.mode = None
-    self.warnings = None
-    self.setup_calls = []
-    self.outputs = []
-    self.cleaned_up = False
-    self.PWM = FakePWM
+    super().__init__("pigpio")
 
-  def setmode(self, mode):
-    self.mode = mode
-
-  def setwarnings(self, enabled):
-    self.warnings = enabled
-
-  def setup(self, pin, mode):
-    self.setup_calls.append((pin, mode))
-
-  def output(self, pin, value):
-    self.outputs.append((pin, value))
-
-  def cleanup(self):
-    self.cleaned_up = True
+  def pi(self):
+    return FakePi()
 
 
-fake_gpio = FakeGPIO()
-fake_rpi = types.ModuleType("RPi")
-fake_rpi.GPIO = fake_gpio
-sys.modules["RPi"] = fake_rpi
-sys.modules["RPi.GPIO"] = fake_gpio
+fake_pigpio = FakePigpio()
+sys.modules["pigpio"] = fake_pigpio
+
 
 from core.types import CameraData, MotorCommand, StateRules
 from motor.translator import MotorTranslator
-from motor.controller import MotorController
+from motor.controller import (
+  DEFAULT_PWM_RANGE,
+  LEFT_MAX_DUTY,
+  RIGHT_MAX_DUTY,
+  MotorController,
+  _board_to_bcm,
+  _duty_percent_to_pwm,
+)
 import config
 
 
@@ -134,81 +128,101 @@ class MotorTranslatorTest(unittest.TestCase):
 
 class MotorControllerTest(unittest.TestCase):
   def setUp(self):
-    FakePWM.instances = []
-    fake_gpio.mode = None
-    fake_gpio.warnings = None
-    fake_gpio.setup_calls = []
-    fake_gpio.outputs = []
-    fake_gpio.cleaned_up = False
+    FakePi.instances = []
     self.controller = MotorController()
 
   def tearDown(self):
     self.controller.cleanup()
 
   @property
-  def left_pwm(self):
-    return FakePWM.instances[0]
+  def pi(self):
+    return FakePi.instances[0]
 
   @property
-  def right_pwm(self):
-    return FakePWM.instances[1]
+  def left_pwm_pin(self):
+    return _board_to_bcm(config.PIN_ENA)
+
+  @property
+  def right_pwm_pin(self):
+    return _board_to_bcm(config.PIN_ENB)
+
+  def last_pwm_duty(self, pin):
+    return [duty for pwm_pin, duty in self.pi.pwm_dutycycles if pwm_pin == pin][-1]
+
+  def test_initializes_outputs_and_pwm(self):
+    expected_pins = [
+      _board_to_bcm(config.PIN_ENA),
+      _board_to_bcm(config.PIN_IN1),
+      _board_to_bcm(config.PIN_IN2),
+      _board_to_bcm(config.PIN_ENB),
+      _board_to_bcm(config.PIN_IN3),
+      _board_to_bcm(config.PIN_IN4),
+    ]
+
+    self.assertEqual(self.pi.modes, [(pin, fake_pigpio.OUTPUT) for pin in expected_pins])
+    self.assertEqual(self.pi.pwm_frequencies, [
+      (self.left_pwm_pin, 1000),
+      (self.right_pwm_pin, 1000),
+    ])
+    self.assertEqual(self.pi.pwm_ranges, [
+      (self.left_pwm_pin, DEFAULT_PWM_RANGE),
+      (self.right_pwm_pin, DEFAULT_PWM_RANGE),
+    ])
 
   def test_straight_command_sets_forward_baseline_duty(self):
     self.controller.execute(MotorCommand(turning_val=0.0, speed_val=1.0))
 
-    self.assertEqual(self.left_pwm.duty_cycles[-1], 90.0)
-    self.assertEqual(self.right_pwm.duty_cycles[-1], 95.0)
-    self.assertEqual(fake_gpio.outputs[-4:], [
-      (config.PIN_IN1, fake_gpio.HIGH),
-      (config.PIN_IN2, fake_gpio.LOW),
-      (config.PIN_IN3, fake_gpio.HIGH),
-      (config.PIN_IN4, fake_gpio.LOW),
+    self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), _duty_percent_to_pwm(LEFT_MAX_DUTY))
+    self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), _duty_percent_to_pwm(RIGHT_MAX_DUTY))
+    self.assertEqual(self.pi.outputs[-4:], [
+      (_board_to_bcm(config.PIN_IN1), 1),
+      (_board_to_bcm(config.PIN_IN2), 0),
+      (_board_to_bcm(config.PIN_IN3), 1),
+      (_board_to_bcm(config.PIN_IN4), 0),
     ])
 
   def test_full_right_turn_reverses_right_motor(self):
     self.controller.execute(MotorCommand(turning_val=1.0, speed_val=1.0))
 
-    self.assertEqual(self.left_pwm.duty_cycles[-1], 90.0)
-    self.assertEqual(self.right_pwm.duty_cycles[-1], 95.0)
-    self.assertEqual(fake_gpio.outputs[-4:], [
-      (config.PIN_IN1, fake_gpio.HIGH),
-      (config.PIN_IN2, fake_gpio.LOW),
-      (config.PIN_IN3, fake_gpio.LOW),
-      (config.PIN_IN4, fake_gpio.HIGH),
+    self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), _duty_percent_to_pwm(LEFT_MAX_DUTY))
+    self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), _duty_percent_to_pwm(RIGHT_MAX_DUTY))
+    self.assertEqual(self.pi.outputs[-4:], [
+      (_board_to_bcm(config.PIN_IN1), 1),
+      (_board_to_bcm(config.PIN_IN2), 0),
+      (_board_to_bcm(config.PIN_IN3), 0),
+      (_board_to_bcm(config.PIN_IN4), 1),
     ])
 
   def test_full_left_turn_reverses_left_motor(self):
     self.controller.execute(MotorCommand(turning_val=-1.0, speed_val=1.0))
 
-    self.assertEqual(self.left_pwm.duty_cycles[-1], 90.0)
-    self.assertEqual(self.right_pwm.duty_cycles[-1], 95.0)
-    self.assertEqual(fake_gpio.outputs[-4:], [
-      (config.PIN_IN1, fake_gpio.LOW),
-      (config.PIN_IN2, fake_gpio.HIGH),
-      (config.PIN_IN3, fake_gpio.HIGH),
-      (config.PIN_IN4, fake_gpio.LOW),
+    self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), _duty_percent_to_pwm(LEFT_MAX_DUTY))
+    self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), _duty_percent_to_pwm(RIGHT_MAX_DUTY))
+    self.assertEqual(self.pi.outputs[-4:], [
+      (_board_to_bcm(config.PIN_IN1), 0),
+      (_board_to_bcm(config.PIN_IN2), 1),
+      (_board_to_bcm(config.PIN_IN3), 1),
+      (_board_to_bcm(config.PIN_IN4), 0),
     ])
 
   def test_stop_command_sets_zero_duty_and_direction_pins_low(self):
     self.controller.execute(MotorCommand(turning_val=0.0, speed_val=0.0))
 
-    self.assertEqual(self.left_pwm.duty_cycles[-1], 0.0)
-    self.assertEqual(self.right_pwm.duty_cycles[-1], 0.0)
-    self.assertEqual(fake_gpio.outputs[-4:], [
-      (config.PIN_IN1, fake_gpio.LOW),
-      (config.PIN_IN2, fake_gpio.LOW),
-      (config.PIN_IN3, fake_gpio.LOW),
-      (config.PIN_IN4, fake_gpio.LOW),
+    self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), 0)
+    self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), 0)
+    self.assertEqual(self.pi.outputs[-4:], [
+      (_board_to_bcm(config.PIN_IN1), 0),
+      (_board_to_bcm(config.PIN_IN2), 0),
+      (_board_to_bcm(config.PIN_IN3), 0),
+      (_board_to_bcm(config.PIN_IN4), 0),
     ])
 
   def test_cleanup_stops_motors_pwm_and_gpio(self):
     self.controller.cleanup()
 
-    self.assertEqual(self.left_pwm.duty_cycles[-1], 0.0)
-    self.assertEqual(self.right_pwm.duty_cycles[-1], 0.0)
-    self.assertTrue(self.left_pwm.stopped)
-    self.assertTrue(self.right_pwm.stopped)
-    self.assertTrue(fake_gpio.cleaned_up)
+    self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), 0)
+    self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), 0)
+    self.assertTrue(self.pi.stopped)
 
 
 if __name__ == "__main__":

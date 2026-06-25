@@ -61,11 +61,11 @@ chmod +x "$PKG_DIR/install.sh"
 
 
 echo "[3/5] Copying requirements.txt..."
-if [ ! -f "./requirements.txt" ]; then
-  echo "ERROR: requirements.txt not found in current directory."
+if [ ! -f "./reqs.txt" ]; then
+  echo "ERROR: reqs.txt not found in current directory."
   exit 1
 fi
-cp "./requirements.txt" "$PKG_DIR/requirements.txt"
+cp "./reqs.txt" "$PKG_DIR/requirements.txt"
 
 
 echo "[4/5] Downloading wheels for Raspberry Pi 4 (linux_aarch64, cp311)..."
@@ -74,7 +74,7 @@ pip3 download \
   --platform linux_aarch64 \
   --python-version 311 \
   --only-binary=:all: \
-  -r "./requirements.txt" || {
+  -r "./reqs.txt" || {
     echo ""
     echo "  WARNING: Some packages may not have aarch64 binary wheels available."
     echo "  Attempting fallback with source packages..."
@@ -82,7 +82,7 @@ pip3 download \
       --dest "$WHEELS_DIR" \
       --platform linux_aarch64 \
       --python-version 311 \
-      -r "./requirements.txt"
+      -r "./reqs.txt"
   }
 
 echo "[5/5] Copying ./src into $SRC_DIR..."
