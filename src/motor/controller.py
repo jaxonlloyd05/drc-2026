@@ -4,8 +4,8 @@ import RPi.GPIO as GPIO
 import config
 
 DEFAULT_PWM_HZ = 1000
-LEFT_MAX_DUTY = 90.0
-RIGHT_MAX_DUTY = 95.0
+LEFT_MAX_DUTY = 90.8
+RIGHT_MAX_DUTY = 97.0
 
 
 def _clamp(value: float, low: float, high: float) -> float:
