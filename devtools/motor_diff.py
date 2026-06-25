@@ -4,6 +4,7 @@
 Run this on the Raspberry Pi with:
 
     python3 devtools/motor_diff.py
+    ^ if this doesn't work, `cp devtools/motor_diff.py mt.py`, run mt.py
 
 The script uses physical BOARD pin numbers from src/config.py. It starts both
 motors forward at 50% duty cycle, then lets you enter signed PWM values to test

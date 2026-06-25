@@ -5,7 +5,7 @@ class CameraDisplay(Component):
   def __init__(self):
     self.save = None
 
-  def show(self, data: CameraData, state: State) -> None:
+  def show(self, data: CameraData) -> None:
     if not self.save:
       height, width = data.frame.shape[:2]
       fps = 30

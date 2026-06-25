@@ -22,11 +22,10 @@ def main() -> None:
 
     while True:
       perception = camera.read()
-      rules, state = state_machine.update(perception)
+      rules, _ = state_machine.update(perception)
       command = translator.compute(perception, rules)
-      # print(command)
       controller.execute(command)
-      display.show(perception, state)
+      display.show(perception)
 
   except KeyboardInterrupt:
     print('\n\n[EXIT] Putting robot to sleep...')
