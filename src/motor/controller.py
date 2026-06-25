@@ -59,7 +59,7 @@ class MotorController(Component):
     self._set_motor(self.left_pwm, self.IN1, self.IN2, left)
     self._set_motor(self.right_pwm, self.IN3, self.IN4, right)
 
-  def _set_motor(self, pwm: GPIO.PWM, forward_pin: int, backward_pin: int, duty: float) -> None:
+  def _set_motor(self, pwm, forward_pin, backward_pin, duty) -> None:
     duty = _clamp(duty, -100.0, 100.0)
 
     if duty > 0:
