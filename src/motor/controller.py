@@ -58,14 +58,13 @@ class MotorController(Component):
     self.pi = pigpio.pi()
     if not self.pi.connected:
       raise RuntimeError("Could not connect to pigpio daemon. Start it with: sudo systemctl enable --now pigpiod")
-
-    self.ENA = _board_to_bcm(config.PIN_ENA)
-
+    
     # left
+    self.ENA = _board_to_bcm(config.PIN_ENA)
     self.IN1 = _board_to_bcm(config.PIN_IN1) #forward
     self.IN2 = _board_to_bcm(config.PIN_IN2) #backward
 
-    #right
+    # right
     self.ENB = _board_to_bcm(config.PIN_ENB)
     self.IN3 = _board_to_bcm(config.PIN_IN3) #forward
     self.IN4 = _board_to_bcm(config.PIN_IN4) #backward

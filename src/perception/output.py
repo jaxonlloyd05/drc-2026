@@ -2,8 +2,9 @@ from core.types import Component, CameraData, State
 import cv2
 
 class CameraDisplay(Component):
-  def __init__(self):
+  def __init__(self, headless: bool):
     self.save = None
+    self.headless = headless
 
   def show(self, data: CameraData) -> None:
     if not self.save:
@@ -13,6 +14,9 @@ class CameraDisplay(Component):
       self.save = cv2.VideoWriter('output_video.mp4', fourcc, fps, (width, height))
 
     self.save.write(data.frame)
+
+    if self.headless:
+      return
 
     if data.debug is not None:
       self._draw_debug(data)
@@ -35,4 +39,5 @@ class CameraDisplay(Component):
     cv2.line(data.frame, (width // 2, 0), (width // 2, height - 1), (255, 255, 255), 1)
   
   def cleanup(self) -> None:
-    cv2.destroyAllWindows()  
+    if not self.headless:
+      cv2.destroyAllWindows()  

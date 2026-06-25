@@ -8,11 +8,12 @@ import config
 MAXFRAMES = config.FRAME_AVERAGE_COUNT
 
 class Camera(Component):
-  def __init__(self, processor: VisionProcessor | None = None):
+  def __init__(self, headless: bool):
     self.index = config.CAMERA_INDEX
     self.cap = None
     self.prevframes = deque([], maxlen=MAXFRAMES)
-    self.processor = processor or VisionProcessor()
+    self.processor = VisionProcessor()
+    self.headless = headless
 
   def spinup(self) -> None:
     while len(self.prevframes) < MAXFRAMES:
@@ -57,7 +58,8 @@ class Camera(Component):
     if self.cap:
       self.cap.release()
 
-    cv2.destroyAllWindows()
+    if not self.headless:
+      cv2.destroyAllWindows()
 
     print('[EXIT] Cleaned up camera!')
 
