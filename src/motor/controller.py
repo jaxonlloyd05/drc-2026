@@ -92,8 +92,8 @@ class MotorController(Component):
     # right = RIGHT_MAX_DUTY * speed
 
     # motors are failing to scale from 0-100, set at perm low
-    left = LEFT_MAX_DUTY if speed > 0.0 else 0.0
-    right = RIGHT_MAX_DUTY if speed > 0.0 else 0.0
+    left = LEFT_MAX_DUTY if speed > 0.0 else -LEFT_MAX_DUTY
+    right = RIGHT_MAX_DUTY if speed > 0.0 else -RIGHT_MAX_DUTY
 
     if turning > 0:
       right *= 1 - (2 * turning)

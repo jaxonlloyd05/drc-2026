@@ -20,6 +20,11 @@ class MotorTranslator(Component):
     turning_limit = _clamp(rules.turning_lim, 0.0, 1.0)
     turning_val = _clamp(turning_val, -turning_limit, turning_limit)
 
+    # although not the prettiest, we are having hardware issues with motors not recieving enough electricity
+    # so im piviting 100% -> -100% and having it move roughly straight
+    if turning_val < 0.65 and turning_val > 0.35:
+      turning_val = 0.5
+
     return MotorCommand(
       turning_val=turning_val,
       speed_val=speed_val,
