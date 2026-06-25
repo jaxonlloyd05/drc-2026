@@ -3,9 +3,17 @@ import cv2
 
 class CameraDisplay(Component):
   def __init__(self):
-    pass
+    self.save = None
 
   def show(self, data: CameraData, state: State) -> None:
+    if not self.save:
+      height, width = data.frame.shape[:2]
+      fps = 30
+      fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+      self.save = cv2.VideoWriter('output_video.mp4', fourcc, fps, (width, height))
+
+    self.save.write(data.frame)
+
     if data.debug is not None:
       self._draw_debug(data)
 
