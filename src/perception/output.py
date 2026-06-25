@@ -8,7 +8,7 @@ class CameraDisplay(Component):
   def show(self, data: CameraData) -> None:
     if not self.save:
       height, width = data.frame.shape[:2]
-      fps = 30
+      fps = 20
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
       self.save = cv2.VideoWriter('output_video.mp4', fourcc, fps, (width, height))
 
