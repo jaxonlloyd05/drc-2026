@@ -69,11 +69,16 @@ class MotorController(Component):
     self.IN3 = _board_to_bcm(config.PIN_IN3) #forward
     self.IN4 = _board_to_bcm(config.PIN_IN4) #backward
 
+    self.kill_btn = _board_to_bcm(config.PIN_BTN)
+
     for pin in self.ENA, self.IN1, self.IN2, self.ENB, self.IN3, self.IN4:
       self.pi.set_mode(pin, pigpio.OUTPUT)
 
     for pin in self.IN1, self.IN2, self.IN3, self.IN4:
       self.pi.write(pin, 0)
+
+    # button
+    self.pi.set_mode(self.kill_btn, pigpio.INPUT)
 
     self._configure_pwm(self.ENA)
     self._configure_pwm(self.ENB)
@@ -102,6 +107,8 @@ class MotorController(Component):
 
     self._set_motor(self.ENA, self.IN1, self.IN2, left)
     self._set_motor(self.ENB, self.IN3, self.IN4, right)
+
+    return True if self.pi.read(self.kill_btn) == 1 else False
 
   def _set_motor(self, pwm_pin, forward_pin, backward_pin, duty) -> None:
     duty = _clamp(duty, -100.0, 100.0)

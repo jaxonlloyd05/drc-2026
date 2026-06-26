@@ -6,6 +6,7 @@ from perception.output import CameraDisplay
 from motor.translator import MotorTranslator
 from motor.controller import MotorController
 from argparse import ArgumentParser
+import time
 
 def main() -> None:
   parser = ArgumentParser(description='drc robot params')
@@ -25,13 +26,17 @@ def main() -> None:
 
   try:
     camera.start()
+    time.sleep(5)
 
     while True:
       perception = camera.read()
       rules, _ = state_machine.update(perception)
       command = translator.compute(perception, rules)
-      controller.execute(command)
+      kill_state = controller.execute(command)
       display.show(perception)
+
+      if kill_state:
+        return
 
   except KeyboardInterrupt:
     print('\n\n[EXIT] Putting robot to sleep...')
