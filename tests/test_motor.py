@@ -121,12 +121,12 @@ class MotorTranslatorTest(unittest.TestCase):
     self.assertEqual(command.speed_val, 1.0)
     self.assertEqual(command.turning_val, 0.3)
 
-  def test_moderate_turn_is_not_rewritten_to_pivot(self):
+  def test_moderate_turn_uses_aggressive_gain(self):
     rules = StateRules(speed_lim=1.0, turning_lim=1.0, obstacle_lim=0.0, ignore_arrows=True)
 
     command = self.translator.compute(make_perception(turning=0.75), rules)
 
-    self.assertEqual(command.turning_val, 0.5)
+    self.assertEqual(command.turning_val, 0.625)
 
   def test_arrow_override_only_when_arrows_are_not_ignored(self):
     active_rules = StateRules(speed_lim=1.0, turning_lim=0.6, obstacle_lim=0.0, ignore_arrows=False)
@@ -248,6 +248,7 @@ class StateMachineTest(unittest.TestCase):
 
     self.assertEqual(state, State.CERTAIN)
     self.assertEqual(rules.speed_lim, 1)
+    self.assertEqual(rules.turning_lim, 0.55)
 
   def test_stop_marker_has_priority(self):
     perception = make_perception(turning=0.5)
@@ -267,14 +268,16 @@ class StateMachineTest(unittest.TestCase):
     self.assertEqual(state, State.LOST)
 
   def test_large_offset_turns_without_arrow(self):
-    _, state = self.machine.update(make_perception(turning=0.8))
+    rules, state = self.machine.update(make_perception(turning=0.61))
 
     self.assertEqual(state, State.TURNING)
+    self.assertEqual(rules.speed_lim, 0.8)
 
-  def test_arrow_turn_has_priority_over_plain_turn(self):
-    _, state = self.machine.update(make_perception(turning=0.8, arrow=1))
+  def test_arrow_turn_has_priority_even_when_centered(self):
+    rules, state = self.machine.update(make_perception(turning=0.5, arrow=1))
 
     self.assertEqual(state, State.TURNING_ARROW)
+    self.assertEqual(rules.speed_lim, 0.75)
 
 
 if __name__ == "__main__":
