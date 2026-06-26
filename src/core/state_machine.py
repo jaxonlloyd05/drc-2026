@@ -8,10 +8,10 @@ class StateMachine(Component):
     self.rules = _build_rules()
 
   def update(self, perceptions: CameraData) -> tuple[StateRules, State]:
-    for i in self.transitions:
-      if None in i.from_state or self.state in i.from_state:
-        if i.condition(perceptions):
-          self.state = i.to_state
+    for transition in self.transitions:
+      if None in transition.from_state or self.state in transition.from_state:
+        if transition.condition(perceptions):
+          self.state = transition.to_state
           break
     
     return self.rules[self.state], self.state
@@ -25,14 +25,13 @@ def _build_transitions() -> list[Transition]:
   # THESE ARE ORDERED BY PRIORITY, IF YOU CHANGE THEM MAKE SURE THE MOST IMPORTANT ARE UP THE TOP
   # havent added obstacles yet, have to decide how it will be done (i.e. obj det or depth perc)
   return [
-    Transition([State.STOPPED],                             State.CONTROLLER,     lambda x: x.controller is True),
+    Transition([None],                                      State.CONTROLLER,     lambda x: x.controller is True),
     Transition([None],                                      State.STOPPED,        lambda x: x.stop is True),
     Transition([None],                                      State.LOST,           lambda x: x.confidence < 0.2),
-    Transition([None],                                      State.TURNING,        lambda x: 0.35 <= x.turning <= 0.65),
-    Transition([State.TURNING],                             State.TURNING_ARROW,  lambda x: x.arrow is not None), 
-    Transition([State.CERTAIN, State.STOPPED, State.LOST],  State.UNCERTAIN,      lambda x: x.confidence < 0.5), 
-    Transition([State.UNCERTAIN, State.TURNING],            State.CERTAIN,        lambda x: x.confidence > 0.7),
-    Transition([None],                                      State.LOST,           lambda x: x.stop is False)
+    Transition([None],                                      State.TURNING_ARROW,  lambda x: x.arrow is not None and abs(x.turning - 0.5) >= 0.15),
+    Transition([None],                                      State.TURNING,        lambda x: abs(x.turning - 0.5) >= 0.15),
+    Transition([None],                                      State.CERTAIN,        lambda x: x.confidence > 0.7),
+    Transition([None],                                      State.UNCERTAIN,      lambda x: x.confidence >= 0.2),
   ]
 
 def _build_rules() -> dict[State, StateRules]:

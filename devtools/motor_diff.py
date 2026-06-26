@@ -21,7 +21,7 @@ import RPi.GPIO as GPIO
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-import src.config as config
+import config
 
 LEFT_PWM_PIN = config.PIN_ENA
 LEFT_FORWARD_PIN = config.PIN_IN1

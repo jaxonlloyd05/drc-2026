@@ -1,4 +1,4 @@
-from core.types import Component, CameraData, State
+from core.types import Component, CameraData
 import cv2
 
 class CameraDisplay(Component):
@@ -39,5 +39,9 @@ class CameraDisplay(Component):
     cv2.line(data.frame, (width // 2, 0), (width // 2, height - 1), (255, 255, 255), 1)
   
   def cleanup(self) -> None:
+    if self.save:
+      self.save.release()
+      self.save = None
+
     if not self.headless:
       cv2.destroyAllWindows()  

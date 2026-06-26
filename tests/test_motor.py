@@ -67,6 +67,8 @@ sys.modules["pigpio"] = fake_pigpio
 
 
 from core.types import CameraData, MotorCommand, StateRules
+from core.state_machine import StateMachine
+from core.types import State
 from motor.translator import MotorTranslator
 from motor.controller import (
   DEFAULT_PWM_RANGE,
@@ -118,6 +120,13 @@ class MotorTranslatorTest(unittest.TestCase):
 
     self.assertEqual(command.speed_val, 1.0)
     self.assertEqual(command.turning_val, 0.3)
+
+  def test_moderate_turn_is_not_rewritten_to_pivot(self):
+    rules = StateRules(speed_lim=1.0, turning_lim=1.0, obstacle_lim=0.0, ignore_arrows=True)
+
+    command = self.translator.compute(make_perception(turning=0.75), rules)
+
+    self.assertEqual(command.turning_val, 0.5)
 
   def test_arrow_override_only_when_arrows_are_not_ignored(self):
     active_rules = StateRules(speed_lim=1.0, turning_lim=0.6, obstacle_lim=0.0, ignore_arrows=False)
@@ -228,6 +237,44 @@ class MotorControllerTest(unittest.TestCase):
     self.assertEqual(self.last_pwm_duty(self.left_pwm_pin), 0)
     self.assertEqual(self.last_pwm_duty(self.right_pwm_pin), 0)
     self.assertTrue(self.pi.stopped)
+
+
+class StateMachineTest(unittest.TestCase):
+  def setUp(self):
+    self.machine = StateMachine()
+
+  def test_confident_centered_lane_moves_from_stopped_to_certain(self):
+    rules, state = self.machine.update(make_perception(turning=0.5))
+
+    self.assertEqual(state, State.CERTAIN)
+    self.assertEqual(rules.speed_lim, 1)
+
+  def test_stop_marker_has_priority(self):
+    perception = make_perception(turning=0.5)
+    perception.stop = True
+
+    rules, state = self.machine.update(perception)
+
+    self.assertEqual(state, State.STOPPED)
+    self.assertEqual(rules.speed_lim, 0.0)
+
+  def test_low_confidence_is_lost(self):
+    perception = make_perception(turning=0.5)
+    perception.confidence = 0.1
+
+    _, state = self.machine.update(perception)
+
+    self.assertEqual(state, State.LOST)
+
+  def test_large_offset_turns_without_arrow(self):
+    _, state = self.machine.update(make_perception(turning=0.8))
+
+    self.assertEqual(state, State.TURNING)
+
+  def test_arrow_turn_has_priority_over_plain_turn(self):
+    _, state = self.machine.update(make_perception(turning=0.8, arrow=1))
+
+    self.assertEqual(state, State.TURNING_ARROW)
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ class State(Enum):
   UNCERTAIN = 'UNCERTAIN'
   AVOID_OBSTACLE = 'AVOID_OBSTACLE'
   TURNING = 'TURNING'
-  TURNING_ARROW = 'TURNING_ARROW',
+  TURNING_ARROW = 'TURNING_ARROW'
   LOST = 'LOST'
   STOPPED = 'STOPPED'
   CONTROLLER = 'CONTROLLER'
@@ -58,9 +58,9 @@ class StateRules:
 
 @dataclass 
 class Transition:
-  from_state: State
+  from_state: list[State | None]
   to_state: State
-  condition: Callable
+  condition: Callable[[CameraData], bool]
 
 @dataclass
 class MotorCommand:

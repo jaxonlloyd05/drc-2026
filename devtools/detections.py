@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 
 '''
-  same thing as motor_diff.py, from project root: `cp devtools/detections.py src/dt.py`, `python3 src/dt.py`
+  From the project root: `python3 devtools/detections.py`
 '''
+
+import argparse
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from perception.camera import Camera
 from perception.output import CameraDisplay
 
-camera = Camera()
-display = CameraDisplay()
+parser = argparse.ArgumentParser(description="Display camera detections without motor control.")
+parser.add_argument("--headless", action="store_true", help="record output without opening display windows")
+args = parser.parse_args()
+
+camera = Camera(headless=args.headless)
+display = CameraDisplay(headless=args.headless)
 
 try: 
   camera.start()
@@ -22,3 +33,4 @@ except KeyboardInterrupt:
 
 finally:
   camera.cleanup()
+  display.cleanup()

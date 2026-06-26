@@ -10,7 +10,7 @@ import time
 
 def main() -> None:
   parser = ArgumentParser(description='drc robot params')
-  parser.add_argument('headless', type=bool, default=False)
+  parser.add_argument('--headless', action='store_true', help='run without OpenCV display windows')
 
   args = parser.parse_args()
 
@@ -32,7 +32,10 @@ def main() -> None:
       perception = camera.read()
       rules, _ = state_machine.update(perception)
       command = translator.compute(perception, rules)
-      _ = controller.execute(command)
+      kill_requested = controller.execute(command)
+      if kill_requested:
+        print('\n\n[EXIT] Kill switch requested shutdown...')
+        break
       display.show(perception)
 
   except KeyboardInterrupt:
