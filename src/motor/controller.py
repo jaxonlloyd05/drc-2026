@@ -112,7 +112,7 @@ class MotorController(Component):
     self._set_motor(self.ENA, self.IN1, self.IN2, left)
     self._set_motor(self.ENB, self.IN3, self.IN4, right)
 
-    return True if self.pi.read(self.kill_btn) == 1 else False
+    return False
 
   def _stop_motors(self) -> None:
     self._set_motor(self.ENA, self.IN1, self.IN2, 0.0)
