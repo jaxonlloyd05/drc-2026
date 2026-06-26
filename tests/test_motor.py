@@ -44,12 +44,16 @@ class FakePi:
   def set_PWM_dutycycle(self, pin, dutycycle):
     self.pwm_dutycycles.append((pin, dutycycle))
 
+  def read(self, pin):
+    return 0
+
   def stop(self):
     self.stopped = True
 
 
 class FakePigpio(types.ModuleType):
   OUTPUT = "OUTPUT"
+  INPUT = "INPUT"
 
   def __init__(self):
     super().__init__("pigpio")
@@ -159,7 +163,8 @@ class MotorControllerTest(unittest.TestCase):
       _board_to_bcm(config.PIN_IN4),
     ]
 
-    self.assertEqual(self.pi.modes, [(pin, fake_pigpio.OUTPUT) for pin in expected_pins])
+    self.assertEqual(self.pi.modes[:-1], [(pin, fake_pigpio.OUTPUT) for pin in expected_pins])
+    self.assertEqual(self.pi.modes[-1], (_board_to_bcm(config.PIN_BTN), fake_pigpio.INPUT))
     self.assertEqual(self.pi.pwm_frequencies, [
       (self.left_pwm_pin, 1000),
       (self.right_pwm_pin, 1000),

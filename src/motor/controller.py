@@ -97,8 +97,12 @@ class MotorController(Component):
     # right = RIGHT_MAX_DUTY * speed
 
     # motors are failing to scale from 0-100, set at perm low
-    left = LEFT_MAX_DUTY if speed > 0.0 else -LEFT_MAX_DUTY
-    right = RIGHT_MAX_DUTY if speed > 0.0 else -RIGHT_MAX_DUTY
+    if speed == 0.0:
+      left = 0.0
+      right = 0.0
+    else:
+      left = LEFT_MAX_DUTY
+      right = RIGHT_MAX_DUTY
 
     if turning > 0:
       right *= 1 - (2 * turning)
@@ -109,6 +113,10 @@ class MotorController(Component):
     self._set_motor(self.ENB, self.IN3, self.IN4, right)
 
     return True if self.pi.read(self.kill_btn) == 1 else False
+
+  def _stop_motors(self) -> None:
+    self._set_motor(self.ENA, self.IN1, self.IN2, 0.0)
+    self._set_motor(self.ENB, self.IN3, self.IN4, 0.0)
 
   def _set_motor(self, pwm_pin, forward_pin, backward_pin, duty) -> None:
     duty = _clamp(duty, -100.0, 100.0)
@@ -130,7 +138,7 @@ class MotorController(Component):
       return
 
     try:
-      self.execute(MotorCommand(turning_val=0.0, speed_val=0.0))
+      self._stop_motors()
     finally:
       self.pi.stop()
       self._cleaned_up = True
