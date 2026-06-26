@@ -32,11 +32,8 @@ def main() -> None:
       perception = camera.read()
       rules, _ = state_machine.update(perception)
       command = translator.compute(perception, rules)
-      kill_state = controller.execute(command)
+      _ = controller.execute(command)
       display.show(perception)
-
-      if kill_state:
-        return
 
   except KeyboardInterrupt:
     print('\n\n[EXIT] Putting robot to sleep...')
